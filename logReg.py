@@ -54,8 +54,8 @@ def logRegScorer(data, params):
     return numpy.dot(w.T, data) + b
 
 
-def lambda_tuning(data, labels, name):
-    lambdas = numpy.linspace(-5, 2, 20)
+def lambda_tuning(data, labels, name, actualDCF=False):
+    lambdas = numpy.linspace(-5, 2, 30)
     lambdas = numpy.power(10, lambdas)
     min_dcfs_bal = []
     min_dcfs_unbal = []
@@ -64,9 +64,14 @@ def lambda_tuning(data, labels, name):
         start = time.time()
         log_reg_evaluator = get_logReg_trainer(l)
         s, TL = k_fold_score(data, labels, 5, log_reg_evaluator, logRegScorer, seed=seed)
-        min_dcfs_bal.append(compute_min_dcf(s, TL, 0.5, 1, 1))
-        min_dcfs_unbal.append(compute_min_dcf(s, TL, 0.1, 1, 1))
-        min_dcfs_unbal2.append(compute_min_dcf(s, TL, 0.9, 1, 1))
+        if actualDCF:
+            min_dcfs_bal.append(compute_act_dcf(s, TL, 0.5, 1, 1))
+            min_dcfs_unbal.append(compute_act_dcf(s, TL, 0.1, 1, 1))
+            min_dcfs_unbal2.append(compute_act_dcf(s, TL, 0.9, 1, 1))
+        else:
+            min_dcfs_bal.append(compute_min_dcf(s, TL, 0.5, 1, 1))
+            min_dcfs_unbal.append(compute_min_dcf(s, TL, 0.1, 1, 1))
+            min_dcfs_unbal2.append(compute_min_dcf(s, TL, 0.9, 1, 1))
         print("λ took %s" % (time.time() - start))
 
     min_overall = numpy.array(min_dcfs_bal).min(initial=2)
@@ -81,6 +86,7 @@ def lambda_tuning(data, labels, name):
     plt.savefig('diagrams/lambda_tune_' + name + '.jpg')
     plt.show()
     return min_overall
+
 
 def lambda_tuning_quad(data, labels, name):
     lambdas = numpy.linspace(-5, 2, 20)
@@ -123,15 +129,14 @@ def log_reg_min_dcf(data, label, lambd, pi_tr):
 
 
 def quad_log_reg_min_dcf(data, label, lambd, pi_tr):
-
-        log_reg_evaluator = get_quadLogReg_trainer(lambd, pi_tr)
-        s, TL = k_fold_score(data, label, 5, log_reg_evaluator, quad_log_reg_scorer, seed=seed)
-        min_dcf = compute_min_dcf(s, TL, 0.5, 1, 1)
-        print("LogReg lambda: %f  pi_tr: %f pi_app: 0.5\t %f" % (lambd,pi_tr, min_dcf))
-        min_dcf = compute_min_dcf(s, TL, 0.1, 1, 1)
-        print("LogReg lambda: %f  pi_tr: %f pi_app: 0.1\t %f" % (lambd,pi_tr, min_dcf))
-        min_dcf = compute_min_dcf(s, TL, 0.9, 1, 1)
-        print("LogReg lambda: %f  pi_tr: %f pi_app: 0.9\t %f" % (lambd,pi_tr, min_dcf))
+    log_reg_evaluator = get_quadLogReg_trainer(lambd, pi_tr)
+    s, TL = k_fold_score(data, label, 5, log_reg_evaluator, quad_log_reg_scorer, seed=seed)
+    min_dcf = compute_min_dcf(s, TL, 0.5, 1, 1)
+    print("LogReg lambda: %f  pi_tr: %f pi_app: 0.5\t %f" % (lambd, pi_tr, min_dcf))
+    min_dcf = compute_min_dcf(s, TL, 0.1, 1, 1)
+    print("LogReg lambda: %f  pi_tr: %f pi_app: 0.1\t %f" % (lambd, pi_tr, min_dcf))
+    min_dcf = compute_min_dcf(s, TL, 0.9, 1, 1)
+    print("LogReg lambda: %f  pi_tr: %f pi_app: 0.9\t %f" % (lambd, pi_tr, min_dcf))
 
 
 def phi(data):
@@ -171,3 +176,25 @@ def quad_log_reg_scorer(data, params):
     c = params[2]
     xpAx = (data * numpy.dot(A, data)).sum(axis=0)
     return xpAx + numpy.dot(b.T, data) + c
+
+
+def evaluate_calibration_param(scores, labels):
+    scores = mrow(scores)
+    model = log_reg_evaluation(scores, labels, 1e-3, 0.5)
+    alpha = model[0]
+    beta = model[1]
+    return alpha, beta
+
+
+def compute_score_calibration(scores, params, pi_app=0.5):
+    alpha = params[0]
+    beta = params[1]
+    scores = alpha * scores + beta - numpy.log(pi_app / (1 - pi_app))
+    return scores
+
+
+def validate_score_calibration(score, label):
+    DTR, LTR, DTE, LTE = split_data(mrow(score), mrow(label))
+    params = evaluate_calibration_param(DTR, LTR)
+    c_sc = compute_score_calibration(DTE, params)
+    return DTE.ravel(), c_sc.ravel(), LTE.ravel()

@@ -154,7 +154,7 @@ def lbg_split(X, gmm, alpha, psi, delta_t, type):
     return gmm
 
 
-def train_lbg_gmm(data, labels, alpha, psi, delta_t, maxComponents, type):
+def train_lbg_gmm(data, labels, alpha, psi, delta_t, maxComponents, type, singleGmm):
     theta_0 = full_cov_evaluation(data, labels)
     X_0 = data[:, labels == 0]
     X_1 = data[:, labels == 1]
@@ -173,26 +173,29 @@ def train_lbg_gmm(data, labels, alpha, psi, delta_t, maxComponents, type):
         components = components * 2
         All_GMMS_0[components] = GMM_0
         All_GMMS_1[components] = GMM_1
-    return All_GMMS_0, All_GMMS_1
+    if singleGmm:
+        return All_GMMS_0[maxComponents], All_GMMS_1[maxComponents]
+    else:
+        return All_GMMS_0, All_GMMS_1
 
 
-def get_gmm_full_cov_trainer(alpha=0.1, psi=0.01, delta_t=1e-6, maxComponents=16):
+def get_gmm_full_cov_trainer(alpha=0.1, psi=0.01, delta_t=1e-6, maxComponents=16, singleGmm=False):
     def inner_trainer(data, labels):
-        return train_lbg_gmm(data, labels, alpha, psi, delta_t, maxComponents, type='')
+        return train_lbg_gmm(data, labels, alpha, psi, delta_t, maxComponents, '', singleGmm)
 
     return inner_trainer
 
 
-def get_gmm_tied_cov_trainer(alpha=0.1, psi=0.01, delta_t=1e-6, maxComponents=16):
+def get_gmm_tied_cov_trainer(alpha=0.1, psi=0.01, delta_t=1e-6, maxComponents=16, singleGmm=False):
     def inner_trainer(data, labels):
-        return train_lbg_gmm(data, labels, alpha, psi, delta_t, maxComponents, type='tied')
+        return train_lbg_gmm(data, labels, alpha, psi, delta_t, maxComponents, 'tied', singleGmm)
 
     return inner_trainer
 
 
-def get_gmm_diag_cov_trainer(alpha=0.1, psi=0.01, delta_t=1e-6, maxComponents=16):
+def get_gmm_diag_cov_trainer(alpha=0.1, psi=0.01, delta_t=1e-6, maxComponents=16, singleGmm=False):
     def inner_trainer(data, labels):
-        return train_lbg_gmm(data, labels, alpha, psi, delta_t, maxComponents, type='diag')
+        return train_lbg_gmm(data, labels, alpha, psi, delta_t, maxComponents, 'diag', singleGmm)
 
     return inner_trainer
 

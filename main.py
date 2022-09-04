@@ -2,6 +2,7 @@ import time
 
 import numpy.linalg
 
+from gmm import score_gmm
 from reduction import *
 from preprocess import *
 from mvg import *
@@ -71,51 +72,56 @@ if __name__ == '__main__':
     # quad_log_reg_min_dcf(pca_d, L, 1e-4, 0.5)
 
     threadpool_limits(limits=7)
-    # plot_C_optimize_linear_svm(zD, L)
-    # plot_c_eps_optimize_quadratic_svm(zD, L, 1)
-    plot_C_optimize_quadratic_svm(zD, L, 0.2, 0)
-    # plot_C_optimize_rbf_svm(zD, L)
 
-    # Maybe old
-    ##################
-    # kernel_fn = get_poly_kernel(1, 1)
-    # rbk_svm_tr, rbf_svm_scorer = get_svm_trainer_model(5, kernel_fn=kernel_fn)
-    # svm_sc, svm_l = k_fold_score(zD, L, 5, rbk_svm_tr, rbf_svm_scorer, seed=seed)
-    # print("minDcf (pi=0.5): %f " % (compute_min_dcf(svm_sc, svm_l, 0.5, 1, 1)))
-    #
+    # plot_C_optimize_linear_svm(zD, L)
+    # lin_svm_tr, lin_svm_scorer = get_svm_trainer_model(1)
+    # svm_sc, svm_l = k_fold_score(zD, L, 5, lin_svm_tr, lin_svm_scorer)
+    # print_model_performance(svm_l, svm_sc, model_name='Linear SVM')
+
+    # plot_c_eps_optimize_quadratic_svm(zD, L, 1)
+    # plot_C_optimize_quadratic_svm(zD, L, 0.2, 0)
+
+    # Optimisation of RBF SVM
+    # plot_C_optimize_rbf_svm(zD, L)
+    # best With C = 30 gamma = 0.01 K = 1
     # kernel_fn = get_rbf_kernel(0.01, 1)
     # rbk_svm_tr, rbf_svm_scorer = get_svm_trainer_model(30, kernel_fn=kernel_fn)
-    # svm_sc, svm_l = k_fold_score(zD, L, 5, rbk_svm_tr, rbf_svm_scorer, seed=seed)
+    # svm_sc, svm_l = k_fold_score(zD, L, 5, rbk_svm_tr, rbf_svm_scorer)
     # print("minDcf (pi=0.5): %f " % (compute_min_dcf(svm_sc, svm_l, 0.5, 1, 1)))
-    ##################
-    ##
+
+    # Optimisation of GMM
     # plot_gmm_full(raw, zD, L, 32)
+    # gmm_S, gmm_L = k_fold_score(raw, L, 5, get_gmm_tied_cov_trainer(maxComponents=8, singleGmm=True), score_gmm)
+    # print_model_performance(gmm_L, gmm_S, model_name='GMM G=8')
 
-    # plot_roc_curve(s, TL, 'fullCov')
-    # plot_roc_curve(LR_s, LR_TL, 'logReg')
-    # bayes_error_plot(s, TL, '-tiedCov')
-    # bayes_error_plot(LR_s, LR_TL, '-logReg')
-    # plt.savefig('diagrams/MVG_LogReg_dcf_2.jpg')
-    # plt.show()
-    #
-    # linear_svm_tr, linear_svm_scorer = get_svm_trainer_model(1, K=1)
-    # start = time.time()
-    # l_svm_sc, l_svm_l = k_fold_score(zD, L, 5, linear_svm_tr, linear_svm_scorer)
-    # min_dcf = compute_min_dcf(l_svm_sc, l_svm_l, 0.5, 1, 1)
-    # print("Linear svm C: 1 pi_app: 0.5\t %f" % (min_dcf))
-    # bayes_error_plot(s, TL, '-tiedCov')
-    # bayes_error_plot(LR_s, LR_TL, '-logReg')
-    # bayes_error_plot(l_svm_sc, l_svm_l, '-svm')
-    # plt.savefig('diagrams/all_dcf.jpg')
-    # plt.show()
-    # print("k_fold_score took %d s" % (time.time() - start))
-    # bayes_error_plot(l_svm_sc, l_svm_l, '-L_svm')
-    # plt.savefig('diagrams/l_svm_dcf_3.jpg')
+    # Check the best model
+    # plot_roc_curve(gmm_S, gmm_L, 'GMM')
+    # plot_roc_curve(svm_sc, svm_l, 'linSVM')
+    # bayes_error_plot(gmm_S, gmm_L, '-gmmTied')
+    # bayes_error_plot(svm_sc, svm_l, '-RbfSvm')
+    # plt.savefig('diagrams/error_plot_TiedGmm_Rbf.jpg')
     # plt.show()
 
-    # log_trainer = get_logReg_trainer(10 ** -4, 0.5)
-    # params = log_trainer(raw, L)
-    # DT, LT = load('../Pulsar_Detection/Test.txt')
+    # GMM Calibration
+    # gmm_S, gmm_SC, gmm_L = validate_score_calibration(gmm_S, gmm_L)
+    # bayes_error_plot(gmm_S, gmm_L, '-gmmUncalibrated')
+    # bayes_error_plot(gmm_SC, gmm_L, '-gmmCalibrated')
+    # plt.savefig('diagrams/error_plot_score_calibration.jpg')
+    # plt.show()
+
+    # Experimental results
+
+    DT, LT = load('../Gender_Detection/Test.txt')
+    z_params = get_z_params(D)
+    zDT = apply_z_center(DT, z_params)
+    gDT = gaussianify_slow(zD, zDT)
+    pca_params = compute_pca(zD, 11)
+    pcaDT = apply_pca(zDT, pca_params)
+
+    validate_mvg_models(raw, zD, gD, pca_d, L, full_cov_evaluation, DT, zDT, gDT, pcaDT, LT, 'Full cov testing')
+    validate_mvg_models(raw, zD, gD, pca_d, L, tied_cov_evaluation, DT, zDT, gDT, pcaDT, LT, 'Tied cov testing')
+    validate_mvg_models(raw, zD, gD, pca_d, L, diag_cov_evaluation, DT, zDT, gDT, pcaDT, LT, 'Diag cov testing')
+    validate_mvg_models(raw, zD, gD, pca_d, L, diag_tied_cov_evaluation, DT, zDT, gDT, pcaDT, LT, 'Diag-tied testing')
     # Scores = logRegScorer(DT, params)
     # params = tied_cov_evaluation(raw, L)
     # scores_tied = full_cov_log_score_fast(DT, params)

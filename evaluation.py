@@ -10,6 +10,26 @@ from svm import get_svm_trainer_model, get_poly_kernel, get_rbf_kernel
 # ii32 = numpy.iinfo(numpy.int32)
 # seed = numpy.int32(numpy.random.rand() * ii32.max)
 seed = 223134132
+seed2 = 1705998866
+
+
+def split_data(D, L, ratio=0.8):
+    # numpy.random.seed(seed2)
+    # D = numpy.random.permutation(D)
+    # L = L.ravel().astype(int)
+    # numpy.random.seed(seed2)
+    # L = numpy.random.permutation(L)
+    stack = numpy.vstack((D, L))
+    numpy.random.seed(seed2)
+    stack = numpy.random.permutation(stack)
+    D = stack[0:D.shape[0], :]
+    L = stack[D.shape[0], :]
+    split_j = int(ratio * D.shape[1])
+    DTR = D[:, 0:split_j]
+    DTE = D[:, split_j:]
+    LTR = L[0:split_j]
+    LTE = L[split_j:]
+    return DTR, LTR, DTE, LTE
 
 
 def k_fold_score(D, L, K, model_builder, model_scorer, seed=seed, gmm_G=None):
@@ -39,42 +59,12 @@ def k_fold_score(D, L, K, model_builder, model_scorer, seed=seed, gmm_G=None):
 
         scores = model_scorer(DTE, model_parameter, )
         if gmm_G is None:
-            S = numpy.concatenate((S, scores))
+            S = numpy.concatenate((S, numpy.ravel(scores)))
         else:
             for G, S_ in S.items():
                 S[G] = numpy.concatenate((S_, scores[G]))
 
     return S, fold_L
-
-
-import GMM_giulia
-
-import GMM_git
-
-
-def k_fold_giulia_gmm(D, L, K, seed=seed):
-    folds = range(D.shape[1])
-    folds = numpy.remainder(folds, K)
-    folds = numpy.sort(folds)
-    stacked = numpy.vstack([D, L]).T
-    numpy.random.seed(seed)
-    stacked = numpy.random.permutation(stacked).T
-    fold_D = stacked[0:D.shape[0], :]
-    fold_L = stacked[D.shape[0], :]
-    fold_L = fold_L.astype(int)
-    S = numpy.array([])
-
-    for i in range(K):
-        DTR = fold_D[:, folds != i]
-        DTE = fold_D[:, folds == i]
-        LTR = fold_L[folds != i,]
-        LTE = fold_L[folds == i,]
-
-        trainer = GMM_git.GMM()
-
-        trainer = trainer.trainClassifier(DTR, LTR, 16)
-
-    return
 
 
 def plot_roc_curve(llrs, labels, line_title):
@@ -164,7 +154,7 @@ def bayes_error_plot_y(p_array, scores, labels, min_cost=False):
 
 
 def bayes_error_plot(scores, labels, title):
-    p_s = numpy.linspace(-3, 3, 50)
+    p_s = numpy.linspace(-3, 3, 60)
     plt.plot(p_s, bayes_error_plot_y(p_s, scores, labels, min_cost=False), label='actualDCF' + title)
     plt.plot(p_s, bayes_error_plot_y(p_s, scores, labels, min_cost=True), label='minDCF' + title)
     plt.xlabel(r'log$\frac{\tilde{π}}{1-\tilde{π}}$')
@@ -173,24 +163,12 @@ def bayes_error_plot(scores, labels, title):
     plt.grid()
 
 
-def min_dcf_mvg_models(raw, zD, gD, pca_d, L, K, trainer, type='Full Cov'):
+def min_dcf_mvg_models(raw, zD, gD, pca_d, L, K, trainer, model_name='Full Cov'):
     s, TL = k_fold_score(raw, L, K, trainer, mvg.full_cov_log_score_fast, seed=seed)
     zs, zTL = k_fold_score(zD, L, K, trainer, mvg.full_cov_log_score_fast, seed=seed)
     gs, gTL = k_fold_score(gD, L, K, trainer, mvg.full_cov_log_score_fast, seed=seed)
     pcas, pcaTL = k_fold_score(pca_d, L, K, trainer, mvg.full_cov_log_score_fast, seed=seed)
-    print("%", type)
-    print("Raw")
-    print(compute_min_dcf(s, TL, 0.5, 1, 1))
-    print(compute_min_dcf(s, TL, 0.1, 1, 1))
-    print("Z")
-    print(compute_min_dcf(zs, zTL, 0.5, 1, 1))
-    print(compute_min_dcf(zs, zTL, 0.1, 1, 1))
-    print("Gauss")
-    print(compute_min_dcf(gs, gTL, 0.5, 1, 1))
-    print(compute_min_dcf(gs, gTL, 0.1, 1, 1))
-    print("PCA")
-    print(compute_min_dcf(pcas, pcaTL, 0.5, 1, 1))
-    print(compute_min_dcf(gs, gTL, 0.1, 1, 1))
+    print_model_performance(TL, s, zs, gs, pcas, model_name, zTL, gTL, pcaTL)
 
 
 def plot_C_optimize_linear_svm(data, label):
@@ -373,3 +351,47 @@ def plot_gmm_full(data, gData, label, maxComponents):
     fig.tight_layout()
     plt.savefig('diagrams/gmm_result.jpg')
     plt.show()
+
+
+def validate_mvg_models(raw, zD, gD, pca_d, L, model_trainer, DT, zDT, gDT, pcaDT, LT,model_name='Full Cov'):
+    params = model_trainer(raw, L)
+    s = mvg.full_cov_log_score_fast(DT, params)
+    params = model_trainer(zD, L)
+    zs = mvg.full_cov_log_score_fast(zDT, params)
+    params = model_trainer(gD, L)
+    gs = mvg.full_cov_log_score_fast(gDT, params)
+    params = model_trainer(pca_d, L)
+    pcas = mvg.full_cov_log_score_fast(pcaDT, params)
+    print_model_performance(LT, s, zs, gs, pcas, model_name)
+
+
+def print_model_performance(L, s=None, zs=None, gs=None, pcas=None, model_name='', zL=None, gL=None, pcaL=None):
+    print("%s" % model_name)
+    if zL is None:
+        zL = L
+    if gL is None:
+        gL = L
+    if pcaL is None:
+        pcaL = L
+
+    print("Raw")
+    if s is not None:
+        print("minDcf (pi=0.5): %f" % compute_min_dcf(s, L, 0.5, 1, 1))
+        print("minDcf (pi=0.1): %f" % compute_min_dcf(s, L, 0.1, 1, 1))
+        print("minDcf (pi=0.9): %f" % compute_min_dcf(s, L, 0.9, 1, 1))
+    print("Z")
+    if zs is not None:
+        print("minDcf (pi=0.5): %f" % compute_min_dcf(zs, zL, 0.5, 1, 1))
+        print("minDcf (pi=0.1): %f" % compute_min_dcf(zs, zL, 0.1, 1, 1))
+        print("minDcf (pi=0.9): %f" % compute_min_dcf(zs, zL, 0.9, 1, 1))
+    print("Gauss")
+    if gs is not None:
+        print("minDcf (pi=0.5): %f" % compute_min_dcf(gs, gL, 0.5, 1, 1))
+        print("minDcf (pi=0.1): %f" % compute_min_dcf(gs, gL, 0.1, 1, 1))
+        print("minDcf (pi=0.9): %f" % compute_min_dcf(gs, gL, 0.9, 1, 1))
+    print("PCA")
+    if pcas is not None:
+        print("minDcf (pi=0.5): %f" % compute_min_dcf(pcas, pcaL, 0.5, 1, 1))
+        print("minDcf (pi=0.1): %f" % compute_min_dcf(pcas, pcaL, 0.1, 1, 1))
+        print("minDcf (pi=0.9): %f" % compute_min_dcf(pcas, pcaL, 0.9, 1, 1))
+    return

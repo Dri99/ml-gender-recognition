@@ -13,46 +13,6 @@ def mrow(v):
     return v.reshape((1, v.size))
 
 
-# def train_svm_linear(data, label, C, K=1):
-#     DTR_ex = numpy.vstack([data, numpy.ones(1, data.shape[1]) * K])
-#
-#     M = data.shape[0]
-#     Z = numpy.zeros(label.shape)
-#     Z = Z - 0.5 * 2
-#
-#     H = numpy.dot(DTR_ex.T, DTR_ex)
-#     H = mcol(Z) * mrow(Z) * H
-#
-#     def JDual(alpha):
-#         Ha = numpy.dot(H, mcol(alpha))
-#         aHa = numpy.dot(mrow(alpha), Ha)
-#         al = alpha.sum()
-#         return -0.5 * aHa.ravel() + al, -Ha.ravel() + numpy.ones(alpha.size)
-#
-#     def LDual(alpha):
-#         loss, grad = JDual(alpha)
-#         return -loss, -grad
-#
-#     def JPrimal(w):
-#         S = numpy.dot(mrow(w), DTR_ex)
-#         loss = numpy.maximum(numpy.zeros(S.shape), -S * Z).sum()
-#         return 0.5 * numpy.linalg.norm(w) ** 2 + C * loss
-#
-#     alphaStar, _x, _y = scipy.optimize.fmin_l_bfgs_b(  # N,
-#         LDual,
-#         numpy.zeros(data.shape[1]),  # N,
-#         bounds=[(0, C)] * data.shape[1],
-#         factr=0.0,
-#         maxiter=100_000,
-#         maxfun=100_000,
-#     )
-#     wStar = numpy.dot(DTR_ex, mcol(alphaStar) * mcol(Z))  # M+1 x N * Nx1 -> M+1 x 1
-#
-#     duality_gap = JDual(alphaStar)[0] - JPrimal(wStar)
-#     print("Duality gap: %f" % duality_gap)
-#     return wStar
-
-
 def train_svm(data, label, C, gamma, kernel_fn, K, pi_t):
     M = data.shape[0]
     N = data.shape[1]
