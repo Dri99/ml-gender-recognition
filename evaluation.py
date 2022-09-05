@@ -365,33 +365,37 @@ def validate_mvg_models(raw, zD, gD, pca_d, L, model_trainer, DT, zDT, gDT, pcaD
     print_model_performance(LT, s, zs, gs, pcas, model_name)
 
 
-def print_model_performance(L, s=None, zs=None, gs=None, pcas=None, model_name='', zL=None, gL=None, pcaL=None):
-    print("%s" % model_name)
+def print_model_performance(L, s=None, zs=None, gs=None, pcas=None, model_name='', zL=None, gL=None, pcaL=None, actual=False):
+    print("# %s" % model_name)
     if zL is None:
         zL = L
     if gL is None:
         gL = L
     if pcaL is None:
         pcaL = L
+    compute_dcf = compute_min_dcf
+    if actual:
+        compute_dcf = compute_act_dcf
 
-    print("Raw")
+    print("\n### Raw")
     if s is not None:
-        print("minDcf (pi=0.5): %f" % compute_min_dcf(s, L, 0.5, 1, 1))
-        print("minDcf (pi=0.1): %f" % compute_min_dcf(s, L, 0.1, 1, 1))
-        print("minDcf (pi=0.9): %f" % compute_min_dcf(s, L, 0.9, 1, 1))
-    print("Z")
+        print("minDcf (pi=0.5): %f" % compute_dcf(s, L, 0.5, 1, 1))
+        print("minDcf (pi=0.1): %f" % compute_dcf(s, L, 0.1, 1, 1))
+        print("minDcf (pi=0.9): %f" % compute_dcf(s, L, 0.9, 1, 1))
+    print("\n### Z")
     if zs is not None:
-        print("minDcf (pi=0.5): %f" % compute_min_dcf(zs, zL, 0.5, 1, 1))
-        print("minDcf (pi=0.1): %f" % compute_min_dcf(zs, zL, 0.1, 1, 1))
-        print("minDcf (pi=0.9): %f" % compute_min_dcf(zs, zL, 0.9, 1, 1))
-    print("Gauss")
+        print("minDcf (pi=0.5): %f" % compute_dcf(zs, zL, 0.5, 1, 1))
+        print("minDcf (pi=0.1): %f" % compute_dcf(zs, zL, 0.1, 1, 1))
+        print("minDcf (pi=0.9): %f" % compute_dcf(zs, zL, 0.9, 1, 1))
+    print("\n### Gauss")
     if gs is not None:
-        print("minDcf (pi=0.5): %f" % compute_min_dcf(gs, gL, 0.5, 1, 1))
-        print("minDcf (pi=0.1): %f" % compute_min_dcf(gs, gL, 0.1, 1, 1))
-        print("minDcf (pi=0.9): %f" % compute_min_dcf(gs, gL, 0.9, 1, 1))
-    print("PCA")
+        print("minDcf (pi=0.5): %f" % compute_dcf(gs, gL, 0.5, 1, 1))
+        print("minDcf (pi=0.1): %f" % compute_dcf(gs, gL, 0.1, 1, 1))
+        print("minDcf (pi=0.9): %f" % compute_dcf(gs, gL, 0.9, 1, 1))
+    print("\n### PCA")
     if pcas is not None:
-        print("minDcf (pi=0.5): %f" % compute_min_dcf(pcas, pcaL, 0.5, 1, 1))
-        print("minDcf (pi=0.1): %f" % compute_min_dcf(pcas, pcaL, 0.1, 1, 1))
-        print("minDcf (pi=0.9): %f" % compute_min_dcf(pcas, pcaL, 0.9, 1, 1))
+        print("minDcf (pi=0.5): %f" % compute_dcf(pcas, pcaL, 0.5, 1, 1))
+        print("minDcf (pi=0.1): %f" % compute_dcf(pcas, pcaL, 0.1, 1, 1))
+        print("minDcf (pi=0.9): %f" % compute_dcf(pcas, pcaL, 0.9, 1, 1))
     return
+

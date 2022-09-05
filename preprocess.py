@@ -34,6 +34,7 @@ def load(fname):
 
 
 def plot_data(data, label, name):
+    M=data.shape[0]
     plt.rc('font', size=16)
     plt.rc('xtick', labelsize=16)
     plt.rc('ytick', labelsize=16)
@@ -55,7 +56,7 @@ def plot_data(data, label, name):
         11: 'Feature 11',
     }
 
-    for dIdx in range(12):
+    for dIdx in range(M):
         plt.figure()
         plt.xlabel(hFea[dIdx])
         plt.hist(Df[dIdx, :], bins=20, density=True, alpha=0.4, label='Male')

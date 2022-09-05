@@ -202,8 +202,8 @@ def get_gmm_diag_cov_trainer(alpha=0.1, psi=0.01, delta_t=1e-6, maxComponents=16
 
 def score_gmm(test_data, params):
     GMM_0, GMM_1 = params
-    log_den_0 = mrow(logpdf_GMM(test_data, GMM_0))
-    log_den_1 = mrow(logpdf_GMM(test_data, GMM_1))
+    log_den_0 = logpdf_GMM(test_data, GMM_0)
+    log_den_1 = logpdf_GMM(test_data, GMM_1)
     return log_den_1 - log_den_0
 
 
