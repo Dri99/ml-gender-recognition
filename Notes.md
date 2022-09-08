@@ -90,6 +90,16 @@ LogReg lambda: 10e-4  pi_tr: 0.500000 pi_app: 0.5	 0.047333
 LogReg lambda: 10e-4  pi_tr: 0.500000 pi_app: 0.1	 0.127000
 LogReg lambda: 10e-4  pi_tr: 0.500000 pi_app: 0.9	 0.125667
 
+Raw pi_t = 0.1
+LogReg lambda: 10e-4  pi_tr: 0.100000 pi_app: 0.5	 0.046333
+LogReg lambda: 10e-4  pi_tr: 0.100000 pi_app: 0.1	 0.135667
+LogReg lambda: 10e-4  pi_tr: 0.100000 pi_app: 0.9	 0.128667
+
+Raw Raw pi_t = 0.9
+LogReg lambda: 10e-4  pi_tr: 0.900000 pi_app: 0.5	 0.047000
+LogReg lambda: 10e-4  pi_tr: 0.900000 pi_app: 0.1	 0.130667
+LogReg lambda: 10e-4  pi_tr: 0.900000 pi_app: 0.9	 0.128667
+
 Z normalised
 LogReg lambda: 10e-4  pi_tr: 0.500000 pi_app: 0.5	 0.046000
 LogReg lambda: 10e-4  pi_tr: 0.500000 pi_app: 0.1	 0.136333
@@ -111,14 +121,27 @@ LogReg lambda: 10e-5  pi_tr: 0.500000 pi_app: 0.1	 0.127000
 LogReg lambda: 10e-5  pi_tr: 0.500000 pi_app: 0.9	 0.125667
 
 ## quadratic logreg
+
 raw
 LogReg lambda: 0.000100  pi_tr: 0.500000 pi_app: 0.5	 0.120667
 LogReg lambda: 0.000100  pi_tr: 0.500000 pi_app: 0.1	 0.323667
 LogReg lambda: 0.000100  pi_tr: 0.500000 pi_app: 0.9	 0.333333
+
 Z normalised
 LogReg lambda: 0.000100  pi_tr: 0.500000 pi_app: 0.5	 0.052333
 LogReg lambda: 0.000100  pi_tr: 0.500000 pi_app: 0.1	 0.150667
 LogReg lambda: 0.000100  pi_tr: 0.500000 pi_app: 0.9	 0.139000
+
+Z normalised pi_t=0.1
+LogReg lambda: 0.000100  pi_tr: 0.100000 pi_app: 0.5	 0.055333
+LogReg lambda: 0.000100  pi_tr: 0.100000 pi_app: 0.1	 0.154667
+LogReg lambda: 0.000100  pi_tr: 0.100000 pi_app: 0.9	 0.145333
+
+Z normalised pi_t=0.9
+LogReg lambda: 0.000100  pi_tr: 0.900000 pi_app: 0.5	 0.054333
+LogReg lambda: 0.000100  pi_tr: 0.900000 pi_app: 0.1	 0.148667
+LogReg lambda: 0.000100  pi_tr: 0.900000 pi_app: 0.9	 0.141333
+
 pca
 LogReg lambda: 0.000100  pi_tr: 0.500000 pi_app: 0.5	 0.092667
 LogReg lambda: 0.000100  pi_tr: 0.500000 pi_app: 0.1	 0.256000

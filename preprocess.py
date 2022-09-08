@@ -34,7 +34,7 @@ def load(fname):
 
 
 def plot_data(data, label, name):
-    M=data.shape[0]
+    M = data.shape[0]
     plt.rc('font', size=16)
     plt.rc('xtick', labelsize=16)
     plt.rc('ytick', labelsize=16)
@@ -65,6 +65,18 @@ def plot_data(data, label, name):
         plt.legend()
         plt.tight_layout()  # Use with non-default font size to keep axis label inside the figure
         plt.savefig(name + ('hist_%d.jpg' % dIdx))
+    plt.show()
+
+
+def scatter_plot(D, L):
+    D_0 = D[:, L == 0]
+    D_1 = D[:, L == 1]
+    for i in range(D.shape[0]):
+        for j in range(i + 1, D.shape[0]):
+            plt.figure()
+            plt.scatter(D_0[i], D_0[j], alpha=0.4)
+            plt.scatter(D_1[i], D_1[j], alpha=0.4)
+            plt.savefig('diagrams/scatter/%d_%d.jpg' % (i, j))
     plt.show()
 
 
@@ -150,7 +162,7 @@ def corr_heatmaps(data, label, name):
     plt.title("Full dataset")
     sb.heatmap(C_full, cmap="YlGnBu", )
     plt.tight_layout()
-    plt.savefig('diagrams/heat_map_full_' + name+ '.jpg')
+    plt.savefig('diagrams/heat_map_full_' + name + '.jpg')
     plt.show()
     plt.title("Male")
     sb.heatmap(C_0, cmap=second, )

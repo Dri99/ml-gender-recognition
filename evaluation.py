@@ -159,8 +159,8 @@ def bayes_error_plot(scores, labels, title):
     plt.plot(p_s, bayes_error_plot_y(p_s, scores, labels, min_cost=True), label='minDCF' + title)
     plt.xlabel(r'log$\frac{\tilde{π}}{1-\tilde{π}}$')
     # r'log$\frac{$\tilde{π}$}{1-$\tilde{π}$}$'
+    plt.grid(True)
     plt.legend()
-    plt.grid()
 
 
 def min_dcf_mvg_models(raw, zD, gD, pca_d, L, K, trainer, model_name='Full Cov'):
