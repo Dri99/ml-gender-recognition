@@ -142,6 +142,11 @@ LogReg lambda: 0.000100  pi_tr: 0.900000 pi_app: 0.5	 0.054333
 LogReg lambda: 0.000100  pi_tr: 0.900000 pi_app: 0.1	 0.148667
 LogReg lambda: 0.000100  pi_tr: 0.900000 pi_app: 0.9	 0.141333
 
+Gaussianized
+LogReg lambda: 0.000100  pi_tr: 0.500000 pi_app: 0.5	 0.057000
+LogReg lambda: 0.000100  pi_tr: 0.500000 pi_app: 0.1	 0.161000
+LogReg lambda: 0.000100  pi_tr: 0.500000 pi_app: 0.9	 0.167667
+
 pca
 LogReg lambda: 0.000100  pi_tr: 0.500000 pi_app: 0.5	 0.092667
 LogReg lambda: 0.000100  pi_tr: 0.500000 pi_app: 0.1	 0.256000

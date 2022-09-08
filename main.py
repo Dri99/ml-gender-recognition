@@ -78,13 +78,14 @@ if __name__ == '__main__':
     # quad_log_reg_min_dcf(raw, L, 1e-4, 0.5)
     # print("Z normalised")
     # quad_log_reg_min_dcf(zD, L, 1e-4, 0.5)
-    print("Z normalised pi_t=0.1")
-    quad_log_reg_min_dcf(zD, L, 1e-4, 0.1)
-    print("Z normalised pi_t=0.9")
-    quad_log_reg_min_dcf(zD, L, 1e-4, 0.9)
+    # print("Z normalised pi_t=0.1")
+    # quad_log_reg_min_dcf(zD, L, 1e-4, 0.1)
+    # print("Z normalised pi_t=0.9")
+    # quad_log_reg_min_dcf(zD, L, 1e-4, 0.9)
+    # print("Gaussianized")
+    # quad_log_reg_min_dcf(gD, L, 1e-4, 0.5)
     # print("PCA")
     # quad_log_reg_min_dcf(pca_d, L, 1e-4, 0.5)
-
 
     s_mvg, L_mvg = k_fold_score(raw, L, 5, full_cov_evaluation, full_cov_log_score_fast)
     s_lr, L_lr = k_fold_score(raw, L, 5, get_logReg_trainer(1e-4), logRegScorer)
@@ -94,7 +95,7 @@ if __name__ == '__main__':
 
     threadpool_limits(limits=7)
 
-    plot_C_optimize_linear_svm(zD, L)
+    # plot_C_optimize_linear_svm(zD, L)
     # lin_svm_tr, lin_svm_scorer = get_svm_trainer_model(1)
     # svm_sc, svm_l = k_fold_score(zD, L, 5, lin_svm_tr, lin_svm_scorer)
     # print_model_performance(svm_l, svm_sc, model_name='Linear SVM')
